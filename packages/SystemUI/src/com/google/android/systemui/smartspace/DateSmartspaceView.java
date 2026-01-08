@@ -23,8 +23,6 @@ import com.android.systemui.res.R;
 import com.google.android.systemui.smartspace.logging.BcSmartspaceCardLogger;
 import com.google.android.systemui.smartspace.logging.BcSmartspaceCardLoggingInfo;
 
-/* compiled from: go/retraceme af8e0b46c0cb0ee2c99e9b6d0c434e5c0b686fd9230eaab7fb9a40e3a9d0cf6f */
-/* loaded from: classes2.dex */
 public class DateSmartspaceView extends LinearLayout
         implements BcSmartspaceDataPlugin.SmartspaceView {
     public static final boolean DEBUG = Log.isLoggable("DateSmartspaceView", Log.DEBUG);
@@ -124,6 +122,14 @@ public class DateSmartspaceView extends LinearLayout
         mDateView = findViewById(R.id.date);
         mNextAlarmTextView = findViewById(R.id.alarm_text_view);
         mDndImageView = findViewById(R.id.dnd_icon);
+        
+        if (mDndImageView != null) {
+            int iconSize = getContext().getResources().getDimensionPixelSize(
+                R.dimen.enhanced_smartspace_icon_size);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                iconSize, iconSize);
+            mDndImageView.setLayoutParams(params);
+        }
     }
 
     @Override
@@ -142,16 +148,26 @@ public class DateSmartspaceView extends LinearLayout
         if (image == null) {
             BcSmartspaceTemplateDataUtils.updateVisibility(mDndImageView, View.GONE);
         } else {
-            mDndIconDrawable.setIcon(image.mutate());
+            int iconSize = getContext().getResources().getDimensionPixelSize(
+                R.dimen.enhanced_smartspace_icon_size);
+            
+            Drawable freshIcon = image.getConstantState().newDrawable().mutate();
+            freshIcon.setBounds(0, 0, iconSize, iconSize);
+            
+            mDndIconDrawable.setIcon(freshIcon);
+            mDndIconDrawable.setBounds(0, 0, iconSize, iconSize);
+            
             mDndImageView.setImageDrawable(mDndIconDrawable);
             mDndImageView.setContentDescription(description);
+            
+            mDndImageView.requestLayout();
+            
             BcSmartspaceTemplateDataUtils.updateVisibility(mDndImageView, View.VISIBLE);
         }
         updateColorForExtras();
     }
 
-    /* JADX DEBUG: Don't trust debug lines info. Lines numbers was adjusted: min line is 1 */
-    @Override // com.android.systemui.plugins.BcSmartspaceDataPlugin.SmartspaceView
+    @Override
     public final void setDozeAmount(float dozeAmount) {
         int loggingSurface;
         mDozeAmount = dozeAmount;
@@ -304,7 +320,6 @@ public class DateSmartspaceView extends LinearLayout
         this(context, attrs, 0);
     }
 
-    /* JADX WARN: Type inference failed for: r4v10, types: [com.google.android.systemui.smartspace.DateSmartspaceView$1] */
     public DateSmartspaceView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mUiSurface = null;
@@ -322,9 +337,7 @@ public class DateSmartspaceView extends LinearLayout
                         .build();
         mNextAlarmData = new BcNextAlarmData();
         mAodSettingsObserver =
-                new ContentObserver(new Handler()) { // from class:
-                    // com.google.android.systemui.smartspace.DateSmartspaceView.1
-                    /* JADX DEBUG: Don't trust debug lines info. Lines numbers was adjusted: min line is 1 */
+                new ContentObserver(new Handler()) {
                     @Override // android.database.ContentObserver
                     public final void onChange(boolean selfChange) {
                         boolean isAodEnabled =
